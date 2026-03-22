@@ -1,0 +1,87 @@
+#!/bin/bash
+
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# RESOLVE OLLAMA URL
+#=================================================
+ynh_script_progression "Configuring Ollama connection..."
+
+ollama_url=$(resolve_ollama_url "$ollama_connection" "$ollama_url")
+ynh_app_setting_set --key=ollama_url --value="$ollama_url"
+
+# Log Ollama detection status
+ollama_domain=$(detect_ollama_domain)
+if [ -n "$ollama_domain" ]; then
+    ynh_print_info "Detected ollama_ynh at ${ollama_domain}"
+else
+    ynh_print_info "ollama_ynh not detected. Install ollama_ynh for local AI models, or configure a remote Ollama URL."
+fi
+
+#=================================================
+# DETERMINE LOGIN FORM SETTING
+#=================================================
+
+# Get the permission value to determine if app is public
+if [ "$init_main_permission" = "visitors" ]; then
+    enable_login_form="true"
+else
+    enable_login_form="false"
+fi
+ynh_app_setting_set --key=enable_login_form --value="$enable_login_form"
+
+#=================================================
+# GET ADMIN EMAIL
+#=================================================
+
+admin_email=$(yunohost user info "$admin" --output-as json | python3 -c "import sys,json; print(json.load(sys.stdin)['mail'])")
+ynh_app_setting_set --key=admin_email --value="$admin_email"
+
+#=================================================
+# CREATE PYTHON VENV AND INSTALL OPEN WEBUI
+#=================================================
+ynh_script_progression "Setting up Python virtual environment..."
+
+python3 -m venv "$install_dir/venv"
+"$install_dir/venv/bin/pip" install --upgrade pip
+"$install_dir/venv/bin/pip" install "open-webui==$OPENWEBUI_VERSION"
+
+chown -R "$app:$app" "$install_dir"
+
+#=================================================
+# ADD CONFIGURATION FILES
+#=================================================
+ynh_script_progression "Adding configuration files..."
+
+ynh_config_add --template=".env" --destination="$install_dir/.env"
+chmod 400 "$install_dir/.env"
+chown "$app:$app" "$install_dir/.env"
+
+#=================================================
+# SYSTEM CONFIGURATION
+#=================================================
+ynh_script_progression "Adding system configurations..."
+
+ynh_config_add_nginx
+
+ynh_config_add_systemd
+
+yunohost service add "$app" --description="Open WebUI AI chat interface"
+
+#=================================================
+# START SYSTEMD SERVICE
+#=================================================
+ynh_script_progression "Starting $app's systemd service..."
+
+ynh_systemctl --service="$app" --action="start" --wait_until="Uvicorn running" --timeout=120
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression "Installation of $app completed"
