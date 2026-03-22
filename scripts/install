@@ -40,8 +40,10 @@ fi
 # DETERMINE LOGIN FORM SETTING
 #=================================================
 
-# Get the permission value to determine if app is public
-if [ "$init_main_permission" = "visitors" ]; then
+# init_main_permission is a special YunoHost question consumed by the permission
+# resource system — it may not be exposed as a regular shell variable.
+# Use safe expansion with a default of "all_users" (private).
+if [ "${init_main_permission:-all_users}" = "visitors" ]; then
     enable_login_form="true"
 else
     enable_login_form="false"
