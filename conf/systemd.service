@@ -13,11 +13,11 @@ Restart=on-failure
 RestartSec=5
 
 # Security hardening
+# Note: ProtectHome is not used — app needs DATA_DIR in /home/yunohost.app/__APP__
 NoNewPrivileges=yes
 PrivateTmp=yes
 PrivateDevices=yes
 ProtectSystem=full
-ProtectHome=yes
 ProtectClock=yes
 ProtectHostname=yes
 ProtectControlGroups=yes
