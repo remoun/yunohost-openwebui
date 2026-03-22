@@ -53,14 +53,18 @@ ynh_restore "/etc/nginx/conf.d/$domain.d/$app.conf"
 ynh_restore "/etc/systemd/system/$app.service"
 systemctl enable "$app.service" --quiet
 
-yunohost service add "$app" --description="Open WebUI AI chat interface"
+yunohost service add "$app" --description="Open WebUI AI chat interface" --log="/var/log/$app/$app.log"
+
+mkdir -p "/var/log/$app"
+touch "/var/log/$app/$app.log"
+chown -R "$app:$app" "/var/log/$app"
 
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
 ynh_script_progression "Starting $app's systemd service..."
 
-ynh_systemctl --service="$app" --action="start" --log_path=systemd --wait_until="Uvicorn running" --timeout=240
+ynh_systemctl --service="$app" --action="start" --wait_until="Uvicorn running" --timeout=240
 
 #=================================================
 # END OF SCRIPT
