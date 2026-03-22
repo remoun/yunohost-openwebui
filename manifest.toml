@@ -93,7 +93,7 @@ ram.runtime = "256M"
     [resources.ports]
 
     [resources.apt]
-    packages = "python3, python3-venv, python3-pip, python3-dev, build-essential, libffi-dev"
+    packages = "python3, python3-venv, python3-pip, python3-dev, build-essential, libffi-dev, postgresql"
 
     [resources.database]
     type = "postgresql"

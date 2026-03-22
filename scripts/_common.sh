@@ -12,7 +12,7 @@ OPENWEBUI_VERSION="0.6.5"
 
 # Detect ollama_ynh and return its domain, or empty string
 detect_ollama_domain() {
-    yunohost app setting ollama domain 2>/dev/null || echo ""
+    ynh_app_setting_get --app=ollama --key=domain 2>/dev/null || echo ""
 }
 
 # Resolve the Ollama URL based on connection mode and detection
