@@ -1,0 +1,68 @@
+#!/bin/bash
+
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+
+source ../settings/scripts/_common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# RESTORE THE APP CONFIGURATION
+#=================================================
+ynh_script_progression "Restoring the app configuration..."
+
+ynh_restore "$install_dir/.env"
+chown "$app:$app" "$install_dir/.env"
+chmod 400 "$install_dir/.env"
+
+#=================================================
+# REBUILD PYTHON VENV
+#=================================================
+ynh_script_progression "Rebuilding Python virtual environment..."
+
+python3 -m venv "$install_dir/venv"
+"$install_dir/venv/bin/pip" install --upgrade pip
+"$install_dir/venv/bin/pip" install "open-webui==$OPENWEBUI_VERSION"
+
+chown -R "$app:$app" "$install_dir"
+
+#=================================================
+# RESTORE THE DATA DIRECTORY
+#=================================================
+ynh_script_progression "Restoring the data directory..."
+
+ynh_restore "$data_dir"
+chown -R "$app:$app" "$data_dir"
+
+#=================================================
+# RESTORE THE POSTGRESQL DATABASE
+#=================================================
+ynh_script_progression "Restoring the PostgreSQL database..."
+
+ynh_psql_db_shell < ./db.sql
+
+#=================================================
+# RESTORE SYSTEM CONFIGURATION
+#=================================================
+ynh_script_progression "Restoring system configurations..."
+
+ynh_restore "/etc/nginx/conf.d/$domain.d/$app.conf"
+
+ynh_restore "/etc/systemd/system/$app.service"
+systemctl enable "$app.service" --quiet
+
+yunohost service add "$app" --description="Open WebUI AI chat interface"
+
+#=================================================
+# START SYSTEMD SERVICE
+#=================================================
+ynh_script_progression "Starting $app's systemd service..."
+
+ynh_systemctl --service="$app" --action="start" --wait_until="Uvicorn running" --timeout=120
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression "Restoration completed for $app"
