@@ -55,6 +55,7 @@ python3 -m venv "$install_dir/venv"
 "$install_dir/venv/bin/pip" install --upgrade pip
 # Work around yanked ddgs==9.11.2 on PyPI (pinned by Open WebUI 0.8.10):
 # install without deps, patch metadata to accept ddgs>=9.11.3, then resolve deps.
+"$install_dir/venv/bin/pip" install psycopg2-binary
 "$install_dir/venv/bin/pip" install --no-deps "open-webui==$OPENWEBUI_VERSION"
 "$install_dir/venv/bin/pip" install "ddgs>=9.11.3"
 for _f in "$install_dir"/venv/lib/python3*/site-packages/open_webui-*.dist-info/METADATA; do
