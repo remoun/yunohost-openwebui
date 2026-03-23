@@ -41,7 +41,7 @@ fi
 case "$llm_backend" in
     openai|both) rag_embedding_engine="openai" ;;
     ollama)      rag_embedding_engine="ollama" ;;
-    *)           rag_embedding_engine="" ;;
+    *)           rag_embedding_engine="openai" ;;
 esac
 ynh_app_setting_set --key=rag_embedding_engine --value="$rag_embedding_engine"
 
