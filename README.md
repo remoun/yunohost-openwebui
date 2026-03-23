@@ -9,7 +9,7 @@
 
 Open WebUI is a user-friendly, self-hosted AI chat interface. It supports multiple LLM backends including Ollama for local models and OpenAI-compatible APIs.
 
-**Shipped version:** 0.6.5~ynh1
+**Shipped version:** 0.8.10~ynh1
 
 ### Features
 
@@ -21,26 +21,16 @@ Open WebUI is a user-friendly, self-hosted AI chat interface. It supports multip
 
 ### YunoHost Integration
 
-- **LDAP** — YunoHost users can log in directly
-- **SSO** — Seamless single sign-on via trusted headers
+- **LDAP** — YunoHost users can log in directly (SSO mode)
+- **SSO** — Seamless single sign-on via trusted headers (SSO mode)
+- **Open registration** — Let anyone create their own account (open mode)
 - **Multi-instance** — Run multiple Open WebUI instances on the same server
-- **Ollama auto-detection** — Automatically connects to `ollama_ynh` if installed
 
 ## Install
 
 ```bash
-sudo yunohost app install https://github.com/remoun/yunohost-openwebui
+sudo yunohost app install https://github.com/remoun/openwebui_ynh
 ```
-
-### Ollama for local AI models
-
-Open WebUI works best with Ollama for running AI models locally. Install it on your YunoHost server:
-
-```bash
-sudo yunohost app install ollama
-```
-
-This is **optional** — Open WebUI can also connect to remote Ollama instances or OpenAI-compatible APIs.
 
 ## Configuration
 
@@ -51,9 +41,10 @@ During install, you'll be asked:
 | Domain | Which domain to serve on |
 | Path | URL path (default: `/`) |
 | Admin | YunoHost user who becomes the Open WebUI admin |
+| Auth mode | **SSO** (YunoHost users only) or **Open** (anyone can register) |
 | Access | Public (anyone sees login page) or SSO-restricted |
-| Ollama connection | `local` (localhost:11434) or `remote` (custom URL) |
-| OpenAI API key | Optional, for OpenAI-compatible backends |
+
+LLM connections (Ollama, OpenAI, OpenRouter, etc.) are configured through the Open WebUI admin panel after install — no API keys needed during setup.
 
 All settings are stored as YunoHost app settings and can be changed after install:
 
@@ -67,7 +58,7 @@ sudo yunohost app setting openwebui <key> -v <value>
 - Official admin documentation: <https://docs.openwebui.com>
 - Upstream app code repository: <https://github.com/open-webui/open-webui>
 - YunoHost packaging docs: <https://yunohost.org/packaging_apps>
-- Report a bug: <https://github.com/remoun/yunohost-openwebui/issues>
+- Report a bug: <https://github.com/remoun/openwebui_ynh/issues>
 
 ## Design
 
@@ -77,7 +68,7 @@ The package architecture and key decisions are documented in [`docs/superpowers/
 
 ```bash
 # Install from this repo (testing)
-sudo yunohost app install https://github.com/remoun/yunohost-openwebui --debug
+sudo yunohost app install https://github.com/remoun/openwebui_ynh --debug
 
 # Validate locally
 python3 -c "import tomllib; tomllib.load(open('manifest.toml', 'rb'))"

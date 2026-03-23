@@ -40,6 +40,14 @@ ram.runtime = "256M"
     [install.admin]
     type = "user"
 
+    [install.auth_mode]
+    type = "select"
+    choices.sso = "YunoHost SSO — only YunoHost users can log in"
+    choices.open = "Open registration — anyone can create an account in Open WebUI"
+    default = "sso"
+    help.en = "SSO uses YunoHost accounts and single sign-on. Open registration lets anyone who can reach the app create their own account."
+    help.fr = "SSO utilise les comptes YunoHost et l'authentification unique. L'inscription ouverte permet à quiconque pouvant accéder à l'application de créer son propre compte."
+
     [install.init_main_permission]
     type = "group"
     default = "visitors"

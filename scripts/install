@@ -17,10 +17,27 @@ ynh_script_progression "Configuring application settings..."
 rag_embedding_engine="openai"
 ynh_app_setting_set --key=rag_embedding_engine --value="$rag_embedding_engine"
 
-# Always enable login form — Open WebUI requires it for trusted header
-# auth (SSO) to auto-create user accounts on first login.
-enable_login_form="true"
+# Configure authentication based on auth_mode (set by manifest install question)
+if [ "$auth_mode" = "open" ]; then
+    # Open registration: Open WebUI manages its own users
+    enable_signup="true"
+    enable_login_form="true"
+    enable_ldap="false"
+    webui_auth_trusted_email_header=""
+    webui_auth_trusted_name_header=""
+else
+    # SSO mode (default): YunoHost handles authentication
+    enable_signup="false"
+    enable_login_form="true"
+    enable_ldap="true"
+    webui_auth_trusted_email_header="YNH_USER_EMAIL"
+    webui_auth_trusted_name_header="YNH_USER_FULLNAME"
+fi
+ynh_app_setting_set --key=enable_signup --value="$enable_signup"
 ynh_app_setting_set --key=enable_login_form --value="$enable_login_form"
+ynh_app_setting_set --key=enable_ldap --value="$enable_ldap"
+ynh_app_setting_set --key=webui_auth_trusted_email_header --value="$webui_auth_trusted_email_header"
+ynh_app_setting_set --key=webui_auth_trusted_name_header --value="$webui_auth_trusted_name_header"
 
 #=================================================
 # GET ADMIN EMAIL

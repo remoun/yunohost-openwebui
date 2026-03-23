@@ -101,11 +101,11 @@ chmod() { echo "$*" >> "$YNH_TRACK_DIR/chmod_calls"; }
 # mkdir/touch for /var/log/$app fail in sandbox; no-op so install/upgrade/restore can run
 mkdir() {
     if [ "$1" = "-p" ] && [ "${2:-}" = "/var/log/$app" ]; then return 0; fi
-    /bin/mkdir "$@"
+    command mkdir "$@"
 }
 touch() {
     if [ "${1:-}" = "/var/log/$app/$app.log" ]; then return 0; fi
-    /bin/touch "$@"
+    command touch "$@"
 }
 
 # Override commands that would actually install things

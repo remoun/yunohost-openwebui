@@ -9,12 +9,12 @@
 
 Open WebUI est une interface de chat IA conviviale et auto-hébergée. Elle supporte plusieurs backends LLM, dont Ollama pour les modèles locaux et les API compatibles OpenAI.
 
-**Version incluse :** 0.6.5~ynh1
+**Version incluse :** 0.8.10~ynh1
 
 ## Installer
 
 ```bash
-sudo yunohost app install https://github.com/remoun/yunohost-openwebui
+sudo yunohost app install https://github.com/remoun/openwebui_ynh
 ```
 
 ## Documentations et ressources
@@ -23,6 +23,6 @@ sudo yunohost app install https://github.com/remoun/yunohost-openwebui
 - Documentation officielle de l'admin : <https://docs.openwebui.com>
 - Dépôt de code de l'app : <https://github.com/open-webui/open-webui>
 - Documentation YunoHost : <https://yunohost.org/packaging_apps>
-- Signaler un bug : <https://github.com/remoun/yunohost-openwebui/issues>
+- Signaler un bug : <https://github.com/remoun/openwebui_ynh/issues>
 
 **Plus d'informations sur le packaging d'applications :** <https://yunohost.org/packaging_apps>

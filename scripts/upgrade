@@ -21,8 +21,13 @@ ynh_systemctl --service="$app" --action="stop"
 ynh_script_progression "Ensuring downward compatibility..."
 
 # Ensure settings exist (for upgrades from older versions)
+ynh_app_setting_set_default --key=auth_mode --value="sso"
 ynh_app_setting_set_default --key=enable_login_form --value="true"
 ynh_app_setting_set_default --key=rag_embedding_engine --value="openai"
+ynh_app_setting_set_default --key=enable_signup --value="false"
+ynh_app_setting_set_default --key=enable_ldap --value="true"
+ynh_app_setting_set_default --key=webui_auth_trusted_email_header --value="YNH_USER_EMAIL"
+ynh_app_setting_set_default --key=webui_auth_trusted_name_header --value="YNH_USER_FULLNAME"
 
 #=================================================
 # UPGRADE PYTHON PACKAGE

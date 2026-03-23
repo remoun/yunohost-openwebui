@@ -7,81 +7,67 @@ run_install() {
     source "$REPO_ROOT/tests/ynh_mock_helpers.sh"
     ynh_test_setup
     source "$REPO_ROOT/scripts/_common.sh"
+    # Override wait_for_port after _common.sh defines it
+    wait_for_port() { echo "wait_for_port $*" >> "$YNH_TRACK_DIR/commands"; return 0; }
 
-    export llm_backend="${TEST_LLM_BACKEND:-none}"
-    export ollama_connection="${TEST_OLLAMA_CONNECTION:-local}"
-    export ollama_url="${TEST_OLLAMA_URL:-http://localhost:11434}"
-    export openai_api_key="${TEST_OPENAI_KEY:-sk-test123}"
-    export openai_api_base_url="${TEST_OPENAI_URL:-https://api.openai.com/v1}"
+    export auth_mode="${TEST_AUTH_MODE:-sso}"
     export admin="${TEST_ADMIN:-admin}"
-    export init_main_permission="${TEST_INIT_PERM:-}"
 
     # Run the install script body (skip source lines and shebang)
-    eval "$(sed -n '/^#.*CONFIGURE LLM BACKEND/,$ p' "$REPO_ROOT/scripts/install")"
+    eval "$(sed -n '/^#.*CONFIGURE SETTINGS/,$ p' "$REPO_ROOT/scripts/install")"
 }
 
-# ─── LLM Backend: none ───
+# ─── Auth mode: SSO (default) ───
 
-@test "install: llm_backend=none clears ollama settings" {
-    TEST_LLM_BACKEND="none" run_install
-    track_contains settings_set "ollama_url=$"
-    track_contains settings_set "ollama_connection=none"
+@test "install: sso mode disables signup" {
+    TEST_AUTH_MODE="sso" run_install
+    track_contains settings_set "enable_signup=false"
 }
 
-@test "install: llm_backend=none clears openai settings" {
-    TEST_LLM_BACKEND="none" run_install
-    track_contains settings_set "openai_api_key=$"
-    track_contains settings_set "openai_api_base_url=$"
-}
-
-# ─── LLM Backend: ollama ───
-
-@test "install: llm_backend=ollama sets ollama_url" {
-    TEST_LLM_BACKEND="ollama" run_install
-    track_contains settings_set "ollama_url=http://localhost:11434"
-}
-
-@test "install: llm_backend=ollama clears openai settings" {
-    TEST_LLM_BACKEND="ollama" run_install
-    track_contains settings_set "openai_api_key=$"
-}
-
-# ─── LLM Backend: openai ───
-
-@test "install: llm_backend=openai clears ollama settings" {
-    TEST_LLM_BACKEND="openai" run_install
-    track_contains settings_set "ollama_url=$"
-    track_contains settings_set "ollama_connection=none"
-}
-
-@test "install: llm_backend=openai keeps openai settings" {
-    TEST_LLM_BACKEND="openai" TEST_OPENAI_KEY="sk-real" run_install
-    ! track_contains settings_set "openai_api_key=$"
-}
-
-# ─── LLM Backend: both ───
-
-@test "install: llm_backend=both sets ollama and keeps openai" {
-    TEST_LLM_BACKEND="both" run_install
-    track_contains settings_set "ollama_url=http://localhost:11434"
-    ! track_contains settings_set "openai_api_key=$"
-}
-
-# ─── Login form / permission ───
-
-@test "install: visitors permission enables login form" {
-    TEST_INIT_PERM="visitors" run_install
+@test "install: sso mode enables login form" {
+    TEST_AUTH_MODE="sso" run_install
     track_contains settings_set "enable_login_form=true"
 }
 
-@test "install: all_users permission disables login form" {
-    TEST_INIT_PERM="all_users" run_install
-    track_contains settings_set "enable_login_form=false"
+@test "install: sso mode enables LDAP" {
+    TEST_AUTH_MODE="sso" run_install
+    track_contains settings_set "enable_ldap=true"
 }
 
-@test "install: unset permission defaults to login form disabled" {
-    TEST_INIT_PERM="" run_install
-    track_contains settings_set "enable_login_form=false"
+@test "install: sso mode sets trusted headers" {
+    TEST_AUTH_MODE="sso" run_install
+    track_contains settings_set "webui_auth_trusted_email_header=YNH_USER_EMAIL"
+    track_contains settings_set "webui_auth_trusted_name_header=YNH_USER_FULLNAME"
+}
+
+# ─── Auth mode: open ───
+
+@test "install: open mode enables signup" {
+    TEST_AUTH_MODE="open" run_install
+    track_contains settings_set "enable_signup=true"
+}
+
+@test "install: open mode disables LDAP" {
+    TEST_AUTH_MODE="open" run_install
+    track_contains settings_set "enable_ldap=false"
+}
+
+@test "install: open mode clears trusted headers" {
+    TEST_AUTH_MODE="open" run_install
+    track_contains settings_set "webui_auth_trusted_email_header=$"
+    track_contains settings_set "webui_auth_trusted_name_header=$"
+}
+
+# ─── Common settings ───
+
+@test "install: sets rag_embedding_engine to openai" {
+    run_install
+    track_contains settings_set "rag_embedding_engine=openai"
+}
+
+@test "install: saves admin_email setting" {
+    run_install
+    track_contains settings_set "admin_email=admin@example.com"
 }
 
 # ─── Ownership ───
@@ -97,13 +83,6 @@ run_install() {
     track_contains chmod_calls "400"
 }
 
-# ─── Admin email ───
-
-@test "install: saves admin_email setting" {
-    run_install
-    track_contains settings_set "admin_email=admin@example.com"
-}
-
 # ─── Service setup ───
 
 @test "install: adds nginx, systemd, and service" {
@@ -113,9 +92,9 @@ run_install() {
     track_contains commands "yunohost service"
 }
 
-@test "install: starts service with Uvicorn wait" {
+@test "install: starts service and waits for port" {
     run_install
-    track_contains commands "Uvicorn running"
+    track_contains commands "ynh_systemctl.*start"
 }
 
 teardown() {
